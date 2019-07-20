@@ -68,7 +68,7 @@ func (c *Client) errorParser(data []byte) error {
 	}
 
 	if !e.Metadata.Success {
-		return fmt.Errorf(e.Metadata.ErrorMessage)
+		return fmt.Errorf("backend error = %s", e.Metadata.ErrorMessage)
 	}
 
 	return nil
@@ -76,12 +76,13 @@ func (c *Client) errorParser(data []byte) error {
 
 // Get makes a GET request to a resource. Updates target interface with contents
 func (c *Client) Get(path string, target interface{}) error {
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s/%s", c.BaseURL, path), nil)
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s", c.BaseURL, path), nil)
 	if err != nil {
 		return err
 	}
 
 	req = req.WithContext(c.ctx)
+	req.Header.Add("Authorization", c.token)
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
@@ -118,12 +119,14 @@ func (c *Client) Post(path string, data interface{}, target interface{}) error {
 		return fmt.Errorf("failed to marshall data to json: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s/%s", c.BaseURL, path), bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s%s", c.BaseURL, path), bytes.NewBuffer(b))
 	if err != nil {
 		return err
 	}
 
 	req = req.WithContext(c.ctx)
+	req.Header.Add("Authorization", c.token)
+	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := c.Client.Do(req)
 	if err != nil {
@@ -138,7 +141,7 @@ func (c *Client) Post(path string, data interface{}, target interface{}) error {
 	// check if the backend reported any errors
 	err = c.errorParser(b)
 	if err != nil {
-		return fmt.Errorf("error reported by backend: %v", err)
+		return err
 	}
 	if resp.StatusCode != 200 {
 		return fmt.Errorf("status code %v", resp.StatusCode)

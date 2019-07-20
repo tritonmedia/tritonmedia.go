@@ -30,6 +30,8 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	defer gock.Off()
+
 	c, err := NewClient("", "exampleKey")
 	if err != nil {
 		t.Errorf("client.Get(): failed to create client: %v", err)
@@ -56,11 +58,10 @@ func TestGet(t *testing.T) {
 		},
 	}
 
-	gock.New(fmt.Sprintf("%s/%s", c.BaseURL, "/v1/media")).
+	gock.New(c.BaseURL).
+		Get("/v1/media").
 		Reply(200).
 		JSON(payload)
-
-	gock.InterceptClient(c.Client)
 
 	var resp triton.V1MediaList
 	err = c.Get("/v1/media", &resp)
@@ -81,7 +82,6 @@ func TestPost(t *testing.T) {
 	}
 
 	postData := triton.V1MediaObject{
-		Id:         uuid.Must(uuid.NewV4()).String(),
 		Name:       "Test Card",
 		Creator:    proto.Media_API,
 		CreatorId:  "",
@@ -101,17 +101,19 @@ func TestPost(t *testing.T) {
 		Media: postData,
 	}
 
-	gock.New(fmt.Sprintf("%s/%s", c.BaseURL, "/v1/media")).
+	gock.New(c.BaseURL).
+		Post("/v1/media").
 		Reply(200).
 		JSON(payload)
-
-	gock.InterceptClient(c.Client)
 
 	var resp triton.V1Media
 	err = c.Post("/v1/media", postData, &resp)
 	if err != nil {
 		t.Errorf("client.Post(): failed to get /v1/media: %v", err)
 	}
+
+	// in case of live testing, we don't generate this
+	postData.Id = resp.Media.Id
 
 	if diff, equal := messagediff.PrettyDiff(resp.Media, postData); !equal {
 		fmt.Println(diff)
