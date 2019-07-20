@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package api;
+
+// Status is the status of this media
+enum TelemetryStatusEntry {
+  QUEUED = 0;
+  DOWNLOADING = 1;
+  CONVERTING = 2;
+  UPLOADING = 3;
+  DEPLOYED = 4;
+  ERRORED = 5;
+}
+
+message TelemetryError {
+  // id for this error
+  string id = 1;
+
+  // mediaId this error correlates too
+  string mediaId = 2;
+
+  // error message
+  string message = 3;
+}
+
+message TelemetryStatus {
+  // id is the ID for this status update
+  string id = 1;
+
+  // mediaId is the id of the media this status pertains too
+  string mediaId = 2;
+
+  TelemetryStatusEntry status = 3;
+
+  // Host this was started on
+  string host = 4;
+}
+
+message TelemetryProgress {
+  // id for this telemetry update
+  string id = 1;
+
+  // media id thjis perstains too
+  string mediaId = 2;
+
+  // progress in 0-100
+  int32 progress = 3;
+
+  // status
+  TelemetryStatusEntry status = 4;
+
+  // Host this was processed on
+  string host = 5;
+}

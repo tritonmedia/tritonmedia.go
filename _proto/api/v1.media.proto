@@ -1,0 +1,58 @@
+syntax = "proto3";
+
+package api;
+
+import "v1.telemetry.proto";
+
+// v1.media represents v1 of the media card
+message Media {
+  // id of this media
+  string id = 1;
+  // name of the media
+  string name = 2;
+
+  // CreatorType is where this media came from (where it was requested)
+  enum CreatorType {
+    TRELLO = 0;
+    TWILIO = 1;
+    DISCORD = 2;
+    API = 3;
+  }
+  CreatorType creator = 3;
+  // ID that correlates to creator, if needed
+  string creatorId = 4;
+  
+  // type of the media
+  enum MediaType {
+    MOVIE = 0;
+    TV = 1;
+    MUSIC = 2;
+  }
+  MediaType type = 5;
+
+  // SourceType is where this media came from
+  enum SourceType {
+    HTTP = 0;
+    TORRENT = 1;
+    FILE = 2;
+    BUCKET = 3;
+  }
+  SourceType source = 6;
+  string sourceURI = 7;
+
+  // MetadataType is the metadata provider used for deduplication and
+  // identification
+  enum MetadataType {
+    MAL = 0;
+    IMDB = 1;
+    ANILIST = 2;
+    KITSU = 3;
+    ANIDB = 4;
+  }
+  MetadataType metadata = 8;
+  // metadataId is the id used to tie this to a metadata provider
+  string metadataId = 9;
+
+  // Status is the status of the media in the pipeline
+  TelemetryStatusEntry status = 10;
+}
