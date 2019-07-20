@@ -1,3 +1,18 @@
+/*
+	Copyright 2019 Triton Media authors. All rights reserved.
+
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
+
+			http://www.apache.org/licenses/LICENSE-2.0
+
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
+*/
 package tritonmedia
 
 import (
@@ -5,8 +20,7 @@ import (
 	"testing"
 
 	"github.com/gofrs/uuid"
-	proto "github.com/tritonmedia/tritonmedia.go/pkg/proto"
-	triton "github.com/tritonmedia/tritonmedia.go/pkg/tritonmedia"
+	api "github.com/tritonmedia/tritonmedia.go/pkg/proto"
 
 	"gopkg.in/d4l3k/messagediff.v1"
 	"gopkg.in/h2non/gock.v1"
@@ -37,23 +51,23 @@ func TestGet(t *testing.T) {
 		t.Errorf("client.Get(): failed to create client: %v", err)
 	}
 
-	payload := triton.V1MediaList{
-		Metadata: triton.V1Metadata{
+	payload := V1MediaList{
+		Metadata: V1Metadata{
 			Success: true,
 			Host:    uuid.Must(uuid.NewV4()).String(),
 		},
-		Media: []triton.V1MediaObject{
-			triton.V1MediaObject{
+		Media: []V1MediaObject{
+			V1MediaObject{
 				Id:         uuid.Must(uuid.NewV4()).String(),
 				Name:       "KonoSuba",
-				Creator:    proto.Media_API,
+				Creator:    api.Media_API,
 				CreatorId:  "",
-				Type:       proto.Media_TV,
-				Source:     proto.Media_FILE,
+				Type:       api.Media_TV,
+				Source:     api.Media_FILE,
 				SourceURI:  "",
-				Metadata:   proto.Media_KITSU,
+				Metadata:   api.Media_KITSU,
 				MetadataId: "",
-				Status:     proto.TelemetryStatusEntry_QUEUED,
+				Status:     api.TelemetryStatusEntry_QUEUED,
 			},
 		},
 	}
@@ -63,7 +77,7 @@ func TestGet(t *testing.T) {
 		Reply(200).
 		JSON(payload)
 
-	var resp triton.V1MediaList
+	var resp V1MediaList
 	err = c.Get("/v1/media", &resp)
 	if err != nil {
 		t.Errorf("client.Get(): failed to get /v1/media: %v", err)
@@ -81,20 +95,20 @@ func TestPost(t *testing.T) {
 		t.Errorf("client.Post(): failed to create client: %v", err)
 	}
 
-	postData := triton.V1MediaObject{
+	postData := V1MediaObject{
 		Name:       "Test Card",
-		Creator:    proto.Media_API,
+		Creator:    api.Media_API,
 		CreatorId:  "",
-		Type:       proto.Media_MOVIE,
-		Source:     proto.Media_FILE,
+		Type:       api.Media_MOVIE,
+		Source:     api.Media_FILE,
 		SourceURI:  "file:///tmp/Bunny.mkv",
-		Metadata:   proto.Media_KITSU,
+		Metadata:   api.Media_KITSU,
 		MetadataId: "tt5311514",
-		Status:     proto.TelemetryStatusEntry_QUEUED,
+		Status:     api.TelemetryStatusEntry_QUEUED,
 	}
 
-	payload := triton.V1Media{
-		Metadata: triton.V1Metadata{
+	payload := V1Media{
+		Metadata: V1Metadata{
 			Success: true,
 			Host:    uuid.Must(uuid.NewV4()).String(),
 		},
@@ -106,7 +120,7 @@ func TestPost(t *testing.T) {
 		Reply(200).
 		JSON(payload)
 
-	var resp triton.V1Media
+	var resp V1Media
 	err = c.Post("/v1/media", postData, &resp)
 	if err != nil {
 		t.Errorf("client.Post(): failed to get /v1/media: %v", err)

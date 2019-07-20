@@ -10,4 +10,4 @@ $ go get -u github.com/tritonmedia/tritonmedia.go
 
 ## License
 
-MIT
+Apache-2.0
