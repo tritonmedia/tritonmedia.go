@@ -8,11 +8,13 @@ import (
 	"io/ioutil"
 	"net/http"
 	"time"
+
+	triton "github.com/tritonmedia/tritonmedia.go/pkg/tritonmedia"
 )
 
 const (
-	// BaseURL is the URL used for all requests
-	BaseURL = "https://app.tritonjs.com"
+	// DefaultBaseURL is the URL used for all requests
+	DefaultBaseURL = "http://127.0.0.1:3401"
 )
 
 // Client is a client used for all requests to Triton Media
@@ -37,7 +39,7 @@ type Client struct {
 // NewClient returns an instance of the TritonMedia client
 func NewClient(baseURL, apiToken string) (*Client, error) {
 	if baseURL == "" {
-		baseURL = BaseURL
+		baseURL = DefaultBaseURL
 	}
 
 	if apiToken == "" {
@@ -46,6 +48,7 @@ func NewClient(baseURL, apiToken string) (*Client, error) {
 
 	return &Client{
 		Client:    http.DefaultClient,
+		BaseURL:   baseURL,
 		token:     apiToken,
 		throttler: time.Tick(time.Second / 60),
 		ctx:       context.Background(),
@@ -58,14 +61,14 @@ func (c *Client) waitForThrottle() {
 }
 
 func (c *Client) errorParser(data []byte) error {
-	var e *V1Error
+	var e *triton.V1
 	err := json.Unmarshal(data, &e)
 	if err != nil {
-		return nil
+		return fmt.Errorf("failed to parse message as a V1 struct: %v", err)
 	}
 
-	if !e.Success {
-		return fmt.Errorf(e.Message)
+	if !e.Metadata.Success {
+		return fmt.Errorf(e.Metadata.ErrorMessage)
 	}
 
 	return nil
@@ -85,9 +88,6 @@ func (c *Client) Get(path string, target interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("status code %v", resp.StatusCode)
-	}
 
 	// TODO(jaredallard): investigate alternatives to reading the entire into mem twice
 	b, err := ioutil.ReadAll(resp.Body)
@@ -95,11 +95,13 @@ func (c *Client) Get(path string, target interface{}) error {
 		return fmt.Errorf("failed to read body: %v", err)
 	}
 
-	// TODO(jaredallard): merge this under the 200 status code check
 	// check if the backend reported any errors
 	err = c.errorParser(b)
 	if err != nil {
 		return fmt.Errorf("error reported by backend: %v", err)
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("status code %v", resp.StatusCode)
 	}
 
 	err = json.Unmarshal(b, target)
@@ -128,10 +130,6 @@ func (c *Client) Post(path string, data interface{}, target interface{}) error {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode != 200 {
-		return fmt.Errorf("status code %v", resp.StatusCode)
-	}
-
 	b, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("failed to read body: %v", err)
@@ -141,6 +139,9 @@ func (c *Client) Post(path string, data interface{}, target interface{}) error {
 	err = c.errorParser(b)
 	if err != nil {
 		return fmt.Errorf("error reported by backend: %v", err)
+	}
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("status code %v", resp.StatusCode)
 	}
 
 	err = json.Unmarshal(b, target)
