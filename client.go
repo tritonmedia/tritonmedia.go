@@ -28,7 +28,7 @@ import (
 
 const (
 	// DefaultBaseURL is the URL used for all requests
-	DefaultBaseURL = "http://127.0.0.1:3401"
+	DefaultBaseURL = "https://app.tritonjs.com"
 )
 
 // Client is a client used for all requests to Triton Media
