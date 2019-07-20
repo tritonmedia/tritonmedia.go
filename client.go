@@ -64,7 +64,7 @@ func NewClient(baseURL, apiToken string) (*Client, error) {
 		Client:    http.DefaultClient,
 		BaseURL:   baseURL,
 		token:     apiToken,
-		throttler: time.Tick(time.Second / 60),
+		throttler: time.NewTicker(time.Second / 60).C,
 		ctx:       context.Background(),
 	}, nil
 }
@@ -90,6 +90,8 @@ func (c *Client) errorParser(data []byte) error {
 
 // Get makes a GET request to a resource. Updates target interface with contents
 func (c *Client) Get(path string, target interface{}) error {
+	c.waitForThrottle()
+
 	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s", c.BaseURL, path), nil)
 	if err != nil {
 		return err
@@ -128,6 +130,8 @@ func (c *Client) Get(path string, target interface{}) error {
 
 // Post makes a POST request to a resource. Updates target interface with contents
 func (c *Client) Post(path string, data interface{}, target interface{}) error {
+	c.waitForThrottle()
+
 	b, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshall data to json: %v", err)

@@ -37,7 +37,7 @@ func TestNewClient(t *testing.T) {
 		t.Error("NewwClient() didn't set BaseURL when provided")
 	}
 
-	c, err := NewClient("http://s.com", "")
+	_, err := NewClient("http://s.com", "")
 	if err == nil {
 		t.Error("NewClient() didn't fail when no apiToken was provided")
 	}
