@@ -100,7 +100,9 @@ func (c *Client) Get(path string, target interface{}) error {
 
 	u.Path = path
 	u.RawPath = path
-	u.Query().Add("enum", "number")
+	q := u.Query()
+	q.Add("enum", "number")
+	u.RawQuery = q.Encode()
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -149,7 +151,9 @@ func (c *Client) Post(path string, data interface{}, target interface{}) error {
 
 	u.Path = path
 	u.RawPath = path
-	u.Query().Add("enum", "number")
+	q := u.Query()
+	q.Add("enum", "number")
+	u.RawQuery = q.Encode()
 
 	b, err := json.Marshal(data)
 	if err != nil {
