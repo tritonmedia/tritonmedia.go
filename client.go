@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -92,7 +93,16 @@ func (c *Client) errorParser(data []byte) error {
 func (c *Client) Get(path string, target interface{}) error {
 	c.waitForThrottle()
 
-	req, err := http.NewRequest("GET", fmt.Sprintf("%s%s", c.BaseURL, path), nil)
+	u, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return fmt.Errorf("failed to build url: %v", err)
+	}
+
+	u.Path = path
+	u.RawPath = path
+	u.Query().Add("enum", "number")
+
+	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
 		return err
 	}
@@ -132,12 +142,21 @@ func (c *Client) Get(path string, target interface{}) error {
 func (c *Client) Post(path string, data interface{}, target interface{}) error {
 	c.waitForThrottle()
 
+	u, err := url.Parse(c.BaseURL)
+	if err != nil {
+		return fmt.Errorf("failed to build url: %v", err)
+	}
+
+	u.Path = path
+	u.RawPath = path
+	u.Query().Add("enum", "number")
+
 	b, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("failed to marshall data to json: %v", err)
 	}
 
-	req, err := http.NewRequest("POST", fmt.Sprintf("%s%s", c.BaseURL, path), bytes.NewBuffer(b))
+	req, err := http.NewRequest("POST", u.String(), bytes.NewBuffer(b))
 	if err != nil {
 		return err
 	}
