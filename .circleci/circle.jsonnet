@@ -1,6 +1,6 @@
 local circle = import 'circle.libsonnet';
 
-{
+circle.ServiceConfig('tritonmedia.go') {
   jobs+: {
     tests: circle.Job(dockerImage='circleci/golang:1.13', withDocker=false) {
       steps_+:: [
@@ -13,7 +13,7 @@ local circle = import 'circle.libsonnet';
     },
   },
   workflows+: {
-    ['tests']+: {
+    ['build-push']+: {
       jobs_:: [
         'tests',
       ],
