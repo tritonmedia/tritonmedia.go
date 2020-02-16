@@ -1,0 +1,22 @@
+local circle = import 'circle.libsonnet';
+
+{
+  jobs+: {
+    tests: circle.Job(dockerImage='circleci/golang:1.13', withDocker=false) {
+      steps_+:: [
+        circle.RestoreCacheStep('go-deps-{{ checksum "go.sum" }}'),
+        circle.RunStep('Fetch Dependencies', 'go mod vendor'),
+        circle.RunStep('Run Tests', 'make test'),
+        // put save_cache step here thanks to make test downloading deps...
+        circle.SaveCacheStep('go-deps-{{ checksum "go.sum" }}', ['/go/pkg/mod']),
+      ],
+    },
+  },
+  workflows+: {
+    ['tests']+: {
+      jobs_:: [
+        'tests',
+      ],
+    },
+  },
+}

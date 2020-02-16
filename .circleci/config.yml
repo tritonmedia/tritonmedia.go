@@ -1,0 +1,20 @@
+jobs:
+  tests:
+    docker:
+    - image: circleci/golang:1.13
+    steps:
+    - checkout
+    - restore_cache:
+        key: go-deps-{{ checksum "go.sum" }}
+    - run:
+        command: go mod vendor
+        name: Fetch Dependencies
+    - run:
+        command: make test
+        name: Run Tests
+    - save_cache:
+        key: go-deps-{{ checksum "go.sum" }}
+        paths:
+        - /go/pkg/mod
+workflows:
+  tests: {}
