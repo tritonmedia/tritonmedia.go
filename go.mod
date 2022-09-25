@@ -1,6 +1,6 @@
 module github.com/tritonmedia/tritonmedia.go
 
-go 1.12
+go 1.19
 
 require (
 	github.com/d4l3k/messagediff v1.2.1 // indirect
